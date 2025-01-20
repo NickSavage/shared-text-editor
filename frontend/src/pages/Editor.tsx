@@ -22,7 +22,7 @@ interface CursorPosition {
 }
 
 const Editor = () => {
-  const { id } = useParams<{ id: string }>();
+  const { share_id } = useParams<{ share_id: string }>();
   const [document, setDocument] = useState<Document | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,15 +50,15 @@ const Editor = () => {
 
     newSocket.on('connect', () => {
       console.log('Connected to WebSocket');
-      if (id) {
-        newSocket.emit('join-document', id);
+      if (share_id) {
+        newSocket.emit('join-document', share_id);
       }
     });
 
     newSocket.on('reconnect', () => {
       console.log('Reconnected to WebSocket');
-      if (id) {
-        newSocket.emit('join-document', id);
+      if (share_id) {
+        newSocket.emit('join-document', share_id);
       }
     });
 
@@ -91,13 +91,13 @@ const Editor = () => {
       newSocket.disconnect();
       socketRef.current = null;
     };
-  }, [id, token]);
+  }, [share_id, token]);
 
   // Fetch document data
   useEffect(() => {
     const fetchDocument = async () => {
       try {
-        const response = await axios.get(`/api/documents/${id}`);
+        const response = await axios.get(`/api/documents/shared/${share_id}`);
         setDocument(response.data);
       } catch (error: any) {
         toast({
@@ -113,10 +113,10 @@ const Editor = () => {
       }
     };
 
-    if (id) {
+    if (share_id) {
       fetchDocument();
     }
-  }, [id]);
+  }, [share_id]);
 
   // Debounced editor change handler
   const debouncedChange = useCallback(
@@ -128,13 +128,13 @@ const Editor = () => {
           if (!value || !socketRef.current || !documentRef.current) return;
           console.log('Sending document change:', value);
           socketRef.current.emit('document-change', {
-            documentId: id,
+            documentId: share_id,
             content: value,
           });
         }, 500); // 500ms debounce
       };
     })(),
-    [id]
+    [share_id]
   );
 
   const handleEditorChange = useCallback((value: string | undefined) => {
@@ -149,7 +149,7 @@ const Editor = () => {
     editor.onDidChangeCursorPosition((e: any) => {
       if (socketRef.current && user) {
         socketRef.current.emit('cursor-update', {
-          documentId: id,
+          documentId: share_id,
           position: e.position,
         });
       }

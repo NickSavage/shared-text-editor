@@ -32,7 +32,7 @@ router.post('/', authenticateToken, async (req: Request<{}, {}, CreateDocumentRe
         }
 
         const result = await query<Document>(
-            'INSERT INTO documents (title, content, owner_id, visibility) VALUES ($1, $2, $3, $4) RETURNING *',
+            'INSERT INTO documents (title, content, owner_id, visibility) VALUES ($1, $2, $3, $4) RETURNING id, title, content, owner_id, share_id, visibility',
             [title, content, userId, visibility]
         );
 
@@ -113,6 +113,26 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         }
 
         res.json(document);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Get document by share ID
+router.get('/shared/:share_id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { share_id } = req.params;
+        const result = await query<Document>(
+            'SELECT * FROM documents WHERE share_id = $1',
+            [share_id]
+        );
+
+        if (result.rows.length === 0) {
+            res.status(404).json({ error: 'Document not found' });
+            return;
+        }
+
+        res.json(result.rows[0]);
     } catch (error) {
         next(error);
     }

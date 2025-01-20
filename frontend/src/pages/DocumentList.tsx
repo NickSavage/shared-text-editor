@@ -88,7 +88,7 @@ const DocumentList = () => {
       onClose();
       setNewDocTitle('');
       setNewDocVisibility('private');
-      navigate(`/document/${response.data.id}`);
+      navigate(`/document/${response.data.share_id}`);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -150,7 +150,7 @@ const DocumentList = () => {
                 <Button
                   colorScheme="blue"
                   mr={3}
-                  onClick={() => navigate(`/document/${doc.id}`)}
+                  onClick={() => navigate(`/document/${doc.share_id}`)}
                 >
                   Open
                 </Button>

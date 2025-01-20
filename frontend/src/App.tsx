@@ -22,7 +22,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<PrivateRoute><DocumentList /></PrivateRoute>} />
-            <Route path="/document/:id" element={<PrivateRoute><Editor /></PrivateRoute>} />
+            <Route path="/document/:share_id" element={<PrivateRoute><Editor /></PrivateRoute>} />
           </Routes>
         </Router>
       </AuthProvider>
