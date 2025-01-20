@@ -1,0 +1,107 @@
+import { useState } from 'react';
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  VStack,
+  Heading,
+  Text,
+  useToast,
+} from '@chakra-ui/react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+const Register = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast({
+        title: 'Error',
+        description: 'Passwords do not match',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await register(email, password);
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.error || 'Failed to register',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Box maxW="md" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
+      <VStack spacing={4} as="form" onSubmit={handleSubmit}>
+        <Heading size="lg">Register</Heading>
+        
+        <FormControl isRequired>
+          <FormLabel>Email</FormLabel>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </FormControl>
+
+        <FormControl isRequired>
+          <FormLabel>Password</FormLabel>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </FormControl>
+
+        <FormControl isRequired>
+          <FormLabel>Confirm Password</FormLabel>
+          <Input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </FormControl>
+
+        <Button
+          type="submit"
+          colorScheme="blue"
+          width="full"
+          isLoading={isLoading}
+        >
+          Register
+        </Button>
+
+        <Text>
+          Already have an account?{' '}
+          <RouterLink to="/login">Login here</RouterLink>
+        </Text>
+      </VStack>
+    </Box>
+  );
+};
+
+export default Register; 
