@@ -1,0 +1,10 @@
+{
+    "sql-file": true,
+    "migrations-dir": "migrations",
+    "ignore-pattern": ".*\\.ts",
+    "env": {
+        "DATABASE_URL": {
+            "ENV": "DATABASE_URL"
+        }
+    }
+} 

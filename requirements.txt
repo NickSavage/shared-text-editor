@@ -1,0 +1,50 @@
+
+# Collaborative Code Editor - Core Requirements
+
+## Overview
+A real-time collaborative code editor allowing multiple users to edit code simultaneously, similar to Pastebin but with real-time collaboration. The system supports both authenticated and anonymous users through share links.
+
+## Key Features
+
+### Document Management
+- Only authenticated users can create documents
+- Documents accessible via direct URL (requires auth) or share URL (public)
+- Real-time collaborative editing with multiple users
+- Cursor positions visible for all active users
+
+### User System
+- JWT authentication for registered users
+- Anonymous access via share links
+- Anonymous users get temporary IDs and colors for cursor visualization
+
+## Technical Stack
+- Frontend: React with WebSocket client
+- Backend: Node.js with WebSocket server
+- Database: PostgreSQL
+- Authentication: JWT
+
+## Database Schema (Core Tables)
+```sql
+-- Users: Store authenticated users
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL
+);
+
+-- Documents: Store code documents
+CREATE TABLE documents (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT,
+    owner_id INTEGER REFERENCES users(id),
+    share_id UUID DEFAULT uuid_generate_v4(),
+    visibility VARCHAR(20) DEFAULT 'private'
+);
+
+##Real-time Collaboration 
+
+- Uses Operational Transform for handling concurrent edits
+- WebSocket events for document changes and cursor positions
+-Maintains consistency across all connected clients
+     
