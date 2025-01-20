@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { query } from '../config/db';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
@@ -22,7 +23,32 @@ interface LoginRequest {
     password: string;
 }
 
-router.post('/register', async (req: Request<{}, {}, RegisterRequest>, res: Response, next: NextFunction) => {
+// Get current user
+router.get('/me', authenticateToken, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        if (!req.user?.userId) {
+            res.status(401).json({ error: 'Authentication required' });
+            return;
+        }
+
+        const result = await query<User>(
+            'SELECT id, email, username FROM users WHERE id = $1',
+            [req.user.userId]
+        );
+
+        if (result.rows.length === 0) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+
+        const user = result.rows[0];
+        res.json({ user: { id: user.id, email: user.email, username: user.username } });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.post('/register', async (req: Request<{}, {}, RegisterRequest>, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { email, password } = req.body;
 
@@ -33,7 +59,8 @@ router.post('/register', async (req: Request<{}, {}, RegisterRequest>, res: Resp
         );
 
         if (existingUser.rows.length > 0) {
-            return res.status(400).json({ error: 'User already exists' });
+            res.status(400).json({ error: 'User already exists' });
+            return;
         }
 
         // Hash password
@@ -59,7 +86,7 @@ router.post('/register', async (req: Request<{}, {}, RegisterRequest>, res: Resp
     }
 });
 
-router.post('/login', async (req: Request<{}, {}, LoginRequest>, res: Response, next: NextFunction) => {
+router.post('/login', async (req: Request<{}, {}, LoginRequest>, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { email, password } = req.body;
 
@@ -70,7 +97,8 @@ router.post('/login', async (req: Request<{}, {}, LoginRequest>, res: Response, 
         );
 
         if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            res.status(401).json({ error: 'Invalid credentials' });
+            return;
         }
 
         const user = result.rows[0];
@@ -78,7 +106,8 @@ router.post('/login', async (req: Request<{}, {}, LoginRequest>, res: Response, 
         // Verify password
         const validPassword = await bcrypt.compare(password, user.password_hash);
         if (!validPassword) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            res.status(401).json({ error: 'Invalid credentials' });
+            return;
         }
 
         // Generate token
@@ -88,7 +117,7 @@ router.post('/login', async (req: Request<{}, {}, LoginRequest>, res: Response, 
             { expiresIn: '24h' }
         );
 
-        res.json({ user: { id: user.id, email: user.email }, token });
+        res.json({ user: { id: user.id, email: user.email, username: user.username }, token });
     } catch (error) {
         next(error);
     }

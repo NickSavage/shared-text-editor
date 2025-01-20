@@ -8,9 +8,7 @@ interface UserPayload {
 declare global {
     namespace Express {
         interface Request {
-            user?: {
-                id: number;
-            };
+            user?: UserPayload;
         }
     }
 }
@@ -25,7 +23,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
     try {
         const payload = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as UserPayload;
-        req.user = { id: payload.userId };
+        req.user = payload;
         next();
     } catch (error) {
         return res.status(403).json({ error: 'Invalid token' });
