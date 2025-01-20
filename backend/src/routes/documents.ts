@@ -20,10 +20,15 @@ interface CreateDocumentRequest {
 }
 
 // Create a new document
-router.post('/', authenticateToken, async (req: Request<{}, {}, CreateDocumentRequest>, res: Response, next: NextFunction) => {
+router.post('/', authenticateToken, async (req: Request<{}, {}, CreateDocumentRequest>, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { title, content = '', visibility = 'private' } = req.body;
-        const userId = req.user?.id;
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            res.status(401).json({ error: 'Authentication required' });
+            return;
+        }
 
         const result = await query<Document>(
             'INSERT INTO documents (title, content, owner_id, visibility) VALUES ($1, $2, $3, $4) RETURNING *',
@@ -37,9 +42,14 @@ router.post('/', authenticateToken, async (req: Request<{}, {}, CreateDocumentRe
 });
 
 // Get all documents for authenticated user
-router.get('/', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/', authenticateToken, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const userId = req.user?.id;
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            res.status(401).json({ error: 'Authentication required' });
+            return;
+        }
 
         const result = await query<Document>(
             'SELECT * FROM documents WHERE owner_id = $1 ORDER BY id DESC',
@@ -53,7 +63,7 @@ router.get('/', authenticateToken, async (req: Request, res: Response, next: Nex
 });
 
 // Get document by ID or share ID
-router.get('/:id', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', authenticateToken, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { id } = req.params;
         let document;
@@ -68,8 +78,9 @@ router.get('/:id', authenticateToken, async (req: Request, res: Response, next: 
 
             // Check if user has access
             if (document && document.visibility === 'private') {
-                if (!req.user || req.user.id !== document.owner_id) {
-                    return res.status(403).json({ error: 'Access denied' });
+                if (!req.user?.userId || req.user.userId !== document.owner_id) {
+                    res.status(403).json({ error: 'Access denied' });
+                    return;
                 }
             }
         } else {
@@ -82,7 +93,8 @@ router.get('/:id', authenticateToken, async (req: Request, res: Response, next: 
         }
 
         if (!document) {
-            return res.status(404).json({ error: 'Document not found' });
+            res.status(404).json({ error: 'Document not found' });
+            return;
         }
 
         res.json(document);
@@ -92,11 +104,16 @@ router.get('/:id', authenticateToken, async (req: Request, res: Response, next: 
 });
 
 // Update document
-router.put('/:id', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', authenticateToken, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { id } = req.params;
         const { title, content, visibility } = req.body;
-        const userId = req.user?.id;
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            res.status(401).json({ error: 'Authentication required' });
+            return;
+        }
 
         // Check ownership
         const document = await query<Document>(
@@ -105,11 +122,13 @@ router.put('/:id', authenticateToken, async (req: Request, res: Response, next: 
         );
 
         if (document.rows.length === 0) {
-            return res.status(404).json({ error: 'Document not found' });
+            res.status(404).json({ error: 'Document not found' });
+            return;
         }
 
         if (document.rows[0].owner_id !== userId) {
-            return res.status(403).json({ error: 'Access denied' });
+            res.status(403).json({ error: 'Access denied' });
+            return;
         }
 
         const result = await query<Document>(
@@ -124,10 +143,15 @@ router.put('/:id', authenticateToken, async (req: Request, res: Response, next: 
 });
 
 // Delete document
-router.delete('/:id', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id', authenticateToken, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { id } = req.params;
-        const userId = req.user?.id;
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            res.status(401).json({ error: 'Authentication required' });
+            return;
+        }
 
         // Check ownership
         const document = await query<Document>(
@@ -136,11 +160,13 @@ router.delete('/:id', authenticateToken, async (req: Request, res: Response, nex
         );
 
         if (document.rows.length === 0) {
-            return res.status(404).json({ error: 'Document not found' });
+            res.status(404).json({ error: 'Document not found' });
+            return;
         }
 
         if (document.rows[0].owner_id !== userId) {
-            return res.status(403).json({ error: 'Access denied' });
+            res.status(403).json({ error: 'Access denied' });
+            return;
         }
 
         await query('DELETE FROM documents WHERE id = $1', [id]);
