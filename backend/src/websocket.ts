@@ -45,11 +45,19 @@ export const setupSocketIO = (httpServer: HttpServer) => {
 
         socket.on('document-change', async (data: { documentId: string; content: string }) => {
             try {
-                // Update the document in the database
-                await query<Document>(
-                    'UPDATE documents SET content = $1 WHERE id = $2',
-                    [data.content, data.documentId]
-                );
+                // Try to find document by numeric ID first, then by share ID if that fails
+                let updateQuery = 'UPDATE documents SET content = $1 WHERE ';
+                let params = [data.content];
+
+                if (!isNaN(Number(data.documentId))) {
+                    updateQuery += 'id = $2';
+                    params.push(data.documentId);
+                } else {
+                    updateQuery += 'share_id = $2';
+                    params.push(data.documentId);
+                }
+
+                await query<Document>(updateQuery, params);
 
                 // Broadcast the change to all clients in the document room except the sender
                 socket.to(data.documentId.toString()).emit('document-change', data.content);

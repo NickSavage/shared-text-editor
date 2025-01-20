@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { query } from '../config/db';
 import { authenticateToken } from '../middleware/auth';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 
@@ -63,7 +64,7 @@ router.get('/', authenticateToken, async (req: Request, res: Response, next: Nex
 });
 
 // Get document by ID or share ID
-router.get('/:id', authenticateToken, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+router.get('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { id } = req.params;
         let document;
@@ -76,15 +77,29 @@ router.get('/:id', authenticateToken, async (req: Request, res: Response, next: 
             );
             document = result.rows[0];
 
-            // Check if user has access
+            // For numeric IDs, private documents need authentication and ownership
             if (document && document.visibility === 'private') {
-                if (!req.user?.userId || req.user.userId !== document.owner_id) {
+                const authHeader = req.headers['authorization'];
+                const token = authHeader && authHeader.split(' ')[1];
+                
+                if (!token) {
+                    res.status(403).json({ error: 'Access denied' });
+                    return;
+                }
+
+                try {
+                    const payload = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
+                    if (payload.userId !== document.owner_id) {
+                        res.status(403).json({ error: 'Access denied' });
+                        return;
+                    }
+                } catch (error) {
                     res.status(403).json({ error: 'Access denied' });
                     return;
                 }
             }
         } else {
-            // Try to find by share ID
+            // Try to find by share ID - no authentication needed
             const result = await query<Document>(
                 'SELECT * FROM documents WHERE share_id = $1',
                 [id]

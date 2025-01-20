@@ -22,6 +22,9 @@ import {
   FormLabel,
   Input,
   useDisclosure,
+  RadioGroup,
+  Radio,
+  Stack,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -37,6 +40,7 @@ interface Document {
 const DocumentList = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [newDocTitle, setNewDocTitle] = useState('');
+  const [newDocVisibility, setNewDocVisibility] = useState<'private' | 'public'>('public');
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
@@ -78,11 +82,12 @@ const DocumentList = () => {
       const response = await axios.post('/api/documents', {
         title: newDocTitle,
         content: '',
-        visibility: 'private',
+        visibility: newDocVisibility,
       });
       
       onClose();
       setNewDocTitle('');
+      setNewDocVisibility('private');
       navigate(`/document/${response.data.id}`);
     } catch (error: any) {
       toast({
@@ -150,6 +155,23 @@ const DocumentList = () => {
                   Open
                 </Button>
                 <Button
+                  colorScheme="green"
+                  mr={3}
+                  onClick={() => {
+                    const shareUrl = `${window.location.origin}/document/${doc.share_id}`;
+                    navigator.clipboard.writeText(shareUrl);
+                    toast({
+                      title: 'Share link copied!',
+                      description: 'You can now share this link with others',
+                      status: 'success',
+                      duration: 3000,
+                      isClosable: true,
+                    });
+                  }}
+                >
+                  Copy Share Link
+                </Button>
+                <Button
                   colorScheme="red"
                   onClick={() => handleDeleteDocument(doc.id)}
                 >
@@ -174,6 +196,15 @@ const DocumentList = () => {
                 onChange={(e) => setNewDocTitle(e.target.value)}
                 placeholder="Enter document title"
               />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Visibility</FormLabel>
+              <RadioGroup value={newDocVisibility} onChange={(value: 'private' | 'public') => setNewDocVisibility(value)}>
+                <Stack direction="row">
+                  <Radio value="private">Private</Radio>
+                  <Radio value="public">Public</Radio>
+                </Stack>
+              </RadioGroup>
             </FormControl>
           </ModalBody>
           <ModalFooter>
