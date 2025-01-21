@@ -35,6 +35,8 @@ interface Document {
   content: string;
   share_id: string;
   visibility: 'private' | 'public';
+  created_at: string;
+  updated_at: string;
 }
 
 const DocumentList = () => {
@@ -144,6 +146,12 @@ const DocumentList = () => {
                 </Text>
                 <Text color="gray.600">
                   Visibility: {doc.visibility}
+                </Text>
+                <Text color="gray.600" mt={2}>
+                  Created: {new Date(doc.created_at).toLocaleDateString()} {new Date(doc.created_at).toLocaleTimeString()}
+                </Text>
+                <Text color="gray.600">
+                  Last modified: {new Date(doc.updated_at).toLocaleDateString()} {new Date(doc.updated_at).toLocaleTimeString()}
                 </Text>
               </CardBody>
               <CardFooter>
