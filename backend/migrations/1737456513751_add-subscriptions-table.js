@@ -18,6 +18,7 @@ exports.up = (pgm) => {
             notNull: true,
             references: '"users"',
             onDelete: 'CASCADE',
+            unique: true,
         },
         stripe_customer_id: {
             type: 'text',

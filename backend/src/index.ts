@@ -7,6 +7,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { authRouter } from './routes/auth';
 import { documentsRouter } from './routes/documents';
 import subscriptionRouter from './routes/subscription';
+import webhookRouter from './routes/webhooks';
 
 dotenv.config();
 
@@ -21,6 +22,11 @@ app.use(cors({
   origin: 'http://localhost:5173', // Vite's default port
   credentials: true
 }));
+
+// Register webhook route before body parser
+app.use('/api/webhooks/stripe', webhookRouter);
+
+// Body parser middleware
 app.use(express.json());
 
 // Routes
