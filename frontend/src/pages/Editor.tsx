@@ -104,13 +104,13 @@ const Editor = () => {
         setDocument(response.data);
       } catch (error: any) {
         toast({
-          title: 'Error',
-          description: error.response?.data?.error || 'Failed to fetch document',
+          title: 'Document Not Found',
+          description: 'This document does not exist or you do not have permission to view it.',
           status: 'error',
-          duration: 3000,
+          duration: null,
           isClosable: true,
         });
-        navigate('/');
+        setDocument(null);
       } finally {
         setIsLoading(false);
       }
@@ -164,7 +164,12 @@ const Editor = () => {
   }
 
   if (!document) {
-    return <Box p={6}>Document not found</Box>;
+    return (
+      <Box p={6}>
+        <Heading size="md" mb={4}>Document Not Found</Heading>
+        <Button onClick={() => navigate('/')}>Back to Documents</Button>
+      </Box>
+    );
   }
 
   return (
