@@ -15,7 +15,7 @@ const Navbar = () => {
     <Box bg="gray.800" px={4} py={2}>
       <Flex justify="space-between" align="center" maxW="container.xl" mx="auto">
         <RouterLink to="/">
-          <Heading size="md" color="white">Code Editor</Heading>
+          <Heading size="md" color="white">CodeScribble</Heading>
         </RouterLink>
         <Flex gap={4}>
           {user ? (
