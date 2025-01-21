@@ -40,9 +40,9 @@ const Editor = () => {
   // Initialize WebSocket connection
   useEffect(() => {
     const newSocket = io('http://localhost:3000', {
-      auth: {
+      auth: token ? {
         token,
-      },
+      } : undefined,
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
@@ -55,22 +55,25 @@ const Editor = () => {
       }
     });
 
+    newSocket.on('error', (error: string) => {
+      console.error('Socket error:', error);
+      toast({
+        title: 'Error',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      if (error.includes('Authentication required')) {
+        navigate('/login');
+      }
+    });
+
     newSocket.on('reconnect', () => {
       console.log('Reconnected to WebSocket');
       if (share_id) {
         newSocket.emit('join-document', share_id);
       }
-    });
-
-    newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
-      toast({
-        title: 'Connection Error',
-        description: 'Trying to reconnect...',
-        status: 'warning',
-        duration: 3000,
-        isClosable: true,
-      });
     });
 
     newSocket.on('document-change', (newContent: string) => {

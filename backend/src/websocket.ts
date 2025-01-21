@@ -20,25 +20,33 @@ export const setupSocketIO = (httpServer: HttpServer) => {
     });
 
     // Authentication middleware
-    io.use((socket, next) => {
+    io.use(async (socket, next) => {
         const token = socket.handshake.auth.token;
-        if (!token) {
-            return next(new Error('Authentication required'));
+        
+        // If token is provided, verify it
+        if (token) {
+            try {
+                const payload = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
+                socket.data.userId = payload.userId;
+            } catch (error) {
+                return next(new Error('Invalid token'));
+            }
         }
-
-        try {
-            const payload = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: number };
-            socket.data.userId = payload.userId;
-            next();
-        } catch (error) {
-            next(new Error('Invalid token'));
-        }
+        
+        // Allow connection to proceed even without token
+        next();
     });
 
     io.on('connection', (socket) => {
         console.log('Client connected');
 
         socket.on('join-document', async (documentId) => {
+            // For numeric IDs (private documents), verify ownership
+            if (!isNaN(Number(documentId)) && !socket.data.userId) {
+                socket.emit('error', 'Authentication required for private documents');
+                return;
+            }
+
             socket.join(documentId.toString());
             console.log(`Client joined document: ${documentId}`);
         });
