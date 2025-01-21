@@ -8,6 +8,7 @@ import Editor from './pages/Editor';
 import DocumentList from './pages/DocumentList';
 import PrivateRoute from './components/PrivateRoute';
 import Pricing from './pages/Pricing';
+import Profile from './pages/Profile';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import SubscriptionCancel from './pages/SubscriptionCancel';
 
@@ -22,6 +23,14 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route
+                path="/profile"
+                element={
+                  <PrivateRoute>
+                    <Profile />
+                  </PrivateRoute>
+                }
+              />
               <Route
                 path="/documents"
                 element={

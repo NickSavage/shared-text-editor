@@ -23,6 +23,9 @@ const Navbar = () => {
               <Button as={RouterLink} to="/" variant="ghost" color="white">
                 My Documents
               </Button>
+              <Button as={RouterLink} to="/profile" variant="ghost" color="white">
+                Profile
+              </Button>
               <Button onClick={handleLogout} colorScheme="red">
                 Logout
               </Button>

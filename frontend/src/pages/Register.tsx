@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSubscription } from '../context/SubscriptionContext';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +20,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
+  const { refreshStatus } = useSubscription();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -40,6 +42,7 @@ const Register = () => {
 
     try {
       await register(email, password);
+      await refreshStatus();
       navigate('/');
     } catch (error: any) {
       toast({
