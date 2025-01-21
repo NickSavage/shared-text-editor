@@ -1,6 +1,7 @@
-import { Box, Flex, Button, Heading } from '@chakra-ui/react';
+import { Box, Flex, Button, Heading, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ChevronDownIcon } from '@chakra-ui/icons';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -19,17 +20,22 @@ const Navbar = () => {
         </RouterLink>
         <Flex gap={4}>
           {user ? (
-            <>
-              <Button as={RouterLink} to="/" variant="ghost" color="white">
-                My Documents
-              </Button>
-              <Button as={RouterLink} to="/profile" variant="ghost" color="white">
-                Profile
-              </Button>
-              <Button onClick={handleLogout} colorScheme="red">
-                Logout
-              </Button>
-            </>
+            <Menu>
+              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} color="white" variant="ghost">
+                {user.email}
+              </MenuButton>
+              <MenuList>
+                <MenuItem as={RouterLink} to="/">
+                  My Documents
+                </MenuItem>
+                <MenuItem as={RouterLink} to="/profile">
+                  Profile
+                </MenuItem>
+                <MenuItem onClick={handleLogout} color="red.500">
+                  Logout
+                </MenuItem>
+              </MenuList>
+            </Menu>
           ) : (
             <>
               <Button as={RouterLink} to="/login" variant="ghost" color="white">
