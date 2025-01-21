@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Heading, HStack, Button, useToast } from '@chakra-ui/react';
+import { Box, Heading, HStack, Button, useToast, VStack, Text } from '@chakra-ui/react';
 import { Editor as MonacoEditor } from '@monaco-editor/react';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
@@ -11,6 +11,7 @@ interface Document {
   title: string;
   content: string;
   visibility: 'private' | 'public';
+  created_at: string;
 }
 
 interface CursorPosition {
@@ -174,10 +175,34 @@ const Editor = () => {
 
   return (
     <Box h="100vh" display="flex" flexDirection="column">
-      <HStack p={4} bg="gray.100" justify="space-between">
-        <Heading size="md">{document.title}</Heading>
-        <Button onClick={() => navigate('/')}>Back to Documents</Button>
-      </HStack>
+      <VStack p={4} bg="gray.100" spacing={2} align="stretch">
+        <HStack justify="space-between">
+          <Heading size="md">{document.title}</Heading>
+          <HStack>
+            <Button
+              colorScheme="green"
+              size="sm"
+              onClick={() => {
+                const shareUrl = `${window.location.origin}/document/${share_id}`;
+                navigator.clipboard.writeText(shareUrl);
+                toast({
+                  title: 'Share link copied!',
+                  description: 'You can now share this link with others',
+                  status: 'success',
+                  duration: 3000,
+                  isClosable: true,
+                });
+              }}
+            >
+              Copy Share Link
+            </Button>
+            <Button size="sm" onClick={() => navigate('/')}>Back to Documents</Button>
+          </HStack>
+        </HStack>
+        <Text color="gray.600" fontSize="sm">
+          Created: {new Date(document.created_at).toLocaleDateString()} {new Date(document.created_at).toLocaleTimeString()}
+        </Text>
+      </VStack>
       
       <Box flex={1}>
         <MonacoEditor
@@ -191,6 +216,36 @@ const Editor = () => {
             scrollBeyondLastLine: false,
             fontSize: 14,
             wordWrap: 'on',
+            quickSuggestions: false,
+            suggestOnTriggerCharacters: false,
+            parameterHints: { enabled: false },
+            suggest: {
+              showMethods: false,
+              showFunctions: false,
+              showConstructors: false,
+              showFields: false,
+              showVariables: false,
+              showClasses: false,
+              showStructs: false,
+              showInterfaces: false,
+              showModules: false,
+              showProperties: false,
+              showEvents: false,
+              showOperators: false,
+              showUnits: false,
+              showValues: false,
+              showConstants: false,
+              showEnums: false,
+              showEnumMembers: false,
+              showKeywords: false,
+              showWords: false,
+              showColors: false,
+              showFiles: false,
+              showReferences: false,
+              showFolders: false,
+              showTypeParameters: false,
+              showSnippets: false,
+            },
           }}
         />
       </Box>
