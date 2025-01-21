@@ -6,6 +6,7 @@ import { setupSocketIO } from './websocket';
 import { errorHandler } from './middleware/errorHandler';
 import { authRouter } from './routes/auth';
 import { documentsRouter } from './routes/documents';
+import subscriptionRouter from './routes/subscription';
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/documents', documentsRouter);
+app.use('/api/subscription', subscriptionRouter);
 
 // Error handling
 app.use(errorHandler);
