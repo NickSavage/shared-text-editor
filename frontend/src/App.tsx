@@ -32,38 +32,21 @@ function App() {
                 }
               />
               <Route
-                path="/documents"
+                path="/document/:share_id"
+                element={
+                    <Editor />
+                }
+              />
+              <Route
+                path="/"
                 element={
                   <PrivateRoute>
                     <DocumentList />
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="/editor/:id"
-                element={
-                  <PrivateRoute>
-                    <Editor />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/subscription/success"
-                element={
-                  <PrivateRoute>
-                    <SubscriptionSuccess />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/subscription/cancel"
-                element={
-                  <PrivateRoute>
-                    <SubscriptionCancel />
-                  </PrivateRoute>
-                }
-              />
-              <Route path="/" element={<Pricing />} />
+              <Route path="/subscription/success" element={<SubscriptionSuccess />} />
+              <Route path="/subscription/cancel" element={<SubscriptionCancel />} />
             </Routes>
           </div>
         </SubscriptionProvider>
