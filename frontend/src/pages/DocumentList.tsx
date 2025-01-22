@@ -25,9 +25,11 @@ import {
   RadioGroup,
   Radio,
   Stack,
+  Tooltip,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useSubscription } from '../context/SubscriptionContext';
 
 interface Document {
   id: number;
@@ -47,6 +49,7 @@ const DocumentList = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
   const toast = useToast();
+  const { subscriptionStatus } = useSubscription();
 
   const fetchDocuments = async () => {
     try {
@@ -71,9 +74,19 @@ const DocumentList = () => {
     if (!newDocTitle.trim()) {
       toast({
         title: 'Error',
-        description: 'Please enter a title',
+        description: 'Please enter a title for the document',
         status: 'error',
         duration: 3000,
+      });
+      return;
+    }
+
+    if (newDocVisibility === 'private' && (!subscriptionStatus || subscriptionStatus.status !== 'active')) {
+      toast({
+        title: 'Pro Subscription Required',
+        description: 'You need a pro subscription to create private documents',
+        status: 'warning',
+        duration: 5000,
         isClosable: true,
       });
       return;
@@ -83,21 +96,19 @@ const DocumentList = () => {
     try {
       const response = await axios.post('/api/documents', {
         title: newDocTitle,
-        content: '',
         visibility: newDocVisibility,
       });
       
+      setDocuments([response.data, ...documents]);
       onClose();
       setNewDocTitle('');
-      setNewDocVisibility('private');
-      navigate(`/document/${response.data.share_id}`);
+      navigate(`/editor/${response.data.id}`);
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.response?.data?.error || 'Failed to create document',
+        title: 'Error creating document',
+        description: error.response?.data?.error || 'Something went wrong',
         status: 'error',
         duration: 3000,
-        isClosable: true,
       });
     } finally {
       setIsLoading(false);
@@ -197,7 +208,7 @@ const DocumentList = () => {
           <ModalHeader>Create New Document</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <FormControl isRequired>
+            <FormControl>
               <FormLabel>Title</FormLabel>
               <Input
                 value={newDocTitle}
@@ -209,8 +220,10 @@ const DocumentList = () => {
               <FormLabel>Visibility</FormLabel>
               <RadioGroup value={newDocVisibility} onChange={(value: 'private' | 'public') => setNewDocVisibility(value)}>
                 <Stack direction="row">
-                  <Radio value="private">Private</Radio>
                   <Radio value="public">Public</Radio>
+                  <Tooltip label={!subscriptionStatus || subscriptionStatus.status !== 'active' ? 'Pro subscription required for private documents' : ''}>
+                    <Radio value="private" isDisabled={!subscriptionStatus || subscriptionStatus.status !== 'active'}>Private</Radio>
+                  </Tooltip>
                 </Stack>
               </RadioGroup>
             </FormControl>

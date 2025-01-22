@@ -141,6 +141,10 @@ const Pricing: React.FC = () => {
                                     </ListItem>
                                     <ListItem>
                                         <ListIcon as={CheckIcon} color="green.500" />
+                                        Public documents only
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListIcon as={CheckIcon} color="green.500" />
                                         Up to 3 documents
                                     </ListItem>
                                 </List>
@@ -200,6 +204,10 @@ const Pricing: React.FC = () => {
                                     <ListItem>
                                         <ListIcon as={CheckIcon} color="green.500" />
                                         Everything in Free
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListIcon as={CheckIcon} color="green.500" />
+                                        Private documents
                                     </ListItem>
                                     <ListItem>
                                         <ListIcon as={CheckIcon} color="green.500" />

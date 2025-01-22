@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { query } from '../config/db';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, checkSubscription } from '../middleware/auth';
 import jwt from 'jsonwebtoken';
 
 const router = Router();
@@ -29,6 +29,19 @@ router.post('/', authenticateToken, async (req: Request<{}, {}, CreateDocumentRe
         if (!userId) {
             res.status(401).json({ error: 'Authentication required' });
             return;
+        }
+
+        // Check subscription status if trying to create a private document
+        if (visibility === 'private') {
+            const subscriptionResult = await query(
+                `SELECT status FROM subscriptions WHERE user_id = $1 AND status = 'active'`,
+                [userId]
+            );
+
+            if (subscriptionResult.rows.length === 0) {
+                res.status(403).json({ error: 'Pro subscription required to create private documents' });
+                return;
+            }
         }
 
         const result = await query<Document>(

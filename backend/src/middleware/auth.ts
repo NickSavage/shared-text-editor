@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { Pool } from 'pg';
 
 interface UserPayload {
     userId: number;
@@ -12,6 +13,8 @@ declare global {
         }
     }
 }
+
+const pool = new Pool();
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
@@ -27,5 +30,30 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
         next();
     } catch (error) {
         return res.status(403).json({ error: 'Invalid token' });
+    }
+};
+
+export const checkSubscription = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ error: 'User not authenticated' });
+            return;
+        }
+
+        const result = await pool.query(
+            `SELECT status FROM subscriptions WHERE user_id = $1 AND status = 'active'`,
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            res.status(403).json({ error: 'Pro subscription required for this feature' });
+            return;
+        }
+
+        next();
+    } catch (error) {
+        console.error('Error checking subscription:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 }; 
