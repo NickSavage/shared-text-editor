@@ -118,7 +118,7 @@ const DocumentList = () => {
       setDocuments([response.data, ...documents]);
       onClose();
       setNewDocTitle('');
-      navigate(`/editor/${response.data.id}`);
+      navigate(`/document/${response.data.share_id}`);
     } catch (error: any) {
       toast({
         title: 'Error creating document',
