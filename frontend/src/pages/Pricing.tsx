@@ -147,6 +147,10 @@ const Pricing: React.FC = () => {
                                         <ListIcon as={CheckIcon} color="green.500" />
                                         Up to 5 documents
                                     </ListItem>
+                                    <ListItem>
+                                        <ListIcon as={CheckIcon} color="green.500" />
+                                        Documents expire after 24 hours
+                                    </ListItem>
                                 </List>
                             </Box>
                         </VStack>
@@ -166,7 +170,7 @@ const Pricing: React.FC = () => {
                             <Text color="gray.500">For power users who need advanced features</Text>
                             <HStack spacing={1} align="baseline">
                                 <Text fontSize="4xl" fontWeight="bold">
-                                    ${billingInterval === 'monthly' ? '10' : '100'}
+                                    ${billingInterval === 'monthly' ? '2' : '20'}
                                 </Text>
                                 <Text color="gray.500">/{billingInterval === 'monthly' ? 'month' : 'year'}</Text>
                                 {billingInterval === 'annual' && (
@@ -215,7 +219,7 @@ const Pricing: React.FC = () => {
                                     </ListItem>
                                     <ListItem>
                                         <ListIcon as={CheckIcon} color="green.500" />
-                                        Advanced collaboration features
+                                        Permanent document storage
                                     </ListItem>
                                     <ListItem>
                                         <ListIcon as={CheckIcon} color="green.500" />

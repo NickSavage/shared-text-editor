@@ -8,11 +8,19 @@ import { authRouter } from './routes/auth';
 import { documentsRouter } from './routes/documents';
 import subscriptionRouter from './routes/subscription';
 import webhookRouter from './routes/webhooks';
+import { Server } from 'socket.io';
+import { cleanupExpiredDocuments } from './jobs/cleanupExpiredDocuments';
 
 dotenv.config();
 
 const app = express();
 const server = createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+        methods: ['GET', 'POST'],
+    },
+});
 
 // Setup Socket.IO
 setupSocketIO(server);
@@ -33,6 +41,12 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/api/documents', documentsRouter);
 app.use('/api/subscription', subscriptionRouter);
+
+// Run cleanup job every hour
+setInterval(cleanupExpiredDocuments, 60 * 60 * 1000);
+
+// Run cleanup on startup
+cleanupExpiredDocuments();
 
 // Error handling
 app.use(errorHandler);

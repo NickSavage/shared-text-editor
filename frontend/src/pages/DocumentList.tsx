@@ -40,6 +40,8 @@ interface Document {
   visibility: 'private' | 'public';
   created_at: string;
   updated_at: string;
+  expires_at: string | null;
+  expires_in: number | null;
 }
 
 const DocumentList = () => {
@@ -203,6 +205,20 @@ const DocumentList = () => {
                 <Text color="gray.600">
                   Visibility: {doc.visibility}
                 </Text>
+                {doc.expires_in !== null && (
+                  <Text 
+                    color={doc.expires_in < 3600 ? "red.500" : "orange.500"}
+                    fontWeight="medium"
+                  >
+                    Expires in: {
+                      doc.expires_in > 3600 
+                        ? `${Math.floor(doc.expires_in / 3600)} hours` 
+                        : doc.expires_in > 60 
+                          ? `${Math.floor(doc.expires_in / 60)} minutes` 
+                          : `${doc.expires_in} seconds`
+                    }
+                  </Text>
+                )}
                 <Text color="gray.600" mt={2}>
                   Created: {new Date(doc.created_at).toLocaleDateString()} {new Date(doc.created_at).toLocaleTimeString()}
                 </Text>

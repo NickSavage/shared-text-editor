@@ -12,6 +12,7 @@ interface Document {
     owner_id: number;
     share_id: string;
     visibility: 'private' | 'public';
+    expires_at?: Date;
 }
 
 interface CreateDocumentRequest {
@@ -52,6 +53,9 @@ router.post('/', authenticateToken, async (req: Request<{}, {}, CreateDocumentRe
             }
         }
 
+        // Set expiry for free users (24 hours from now)
+        const expiresAt = !isProUser ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
+
         // Check subscription status if trying to create a private document
         if (visibility === 'private') {
             if (!isProUser) {
@@ -61,8 +65,8 @@ router.post('/', authenticateToken, async (req: Request<{}, {}, CreateDocumentRe
         }
 
         const result = await query<Document>(
-            'INSERT INTO documents (title, content, owner_id, visibility) VALUES ($1, $2, $3, $4) RETURNING id, title, content, owner_id, share_id, visibility',
-            [title, content, userId, visibility]
+            'INSERT INTO documents (title, content, owner_id, visibility, expires_at) VALUES ($1, $2, $3, $4, $5) RETURNING id, title, content, owner_id, share_id, visibility, expires_at',
+            [title, content, userId, visibility, expiresAt]
         );
 
         res.status(201).json(result.rows[0]);
@@ -82,11 +86,17 @@ router.get('/', authenticateToken, async (req: Request, res: Response, next: Nex
         }
 
         const result = await query<Document>(
-            'SELECT * FROM documents WHERE owner_id = $1 ORDER BY id DESC',
+            'SELECT * FROM documents WHERE owner_id = $1 AND (expires_at IS NULL OR expires_at > NOW()) ORDER BY id DESC',
             [userId]
         );
 
-        res.json(result.rows);
+        // Add expiry information to the response
+        const documentsWithExpiry = result.rows.map(doc => ({
+            ...doc,
+            expires_in: doc.expires_at ? Math.max(0, Math.floor((new Date(doc.expires_at).getTime() - Date.now()) / 1000)) : null
+        }));
+
+        res.json(documentsWithExpiry);
     } catch (error) {
         next(error);
     }
@@ -101,7 +111,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         // Try to find by numeric ID first
         if (!isNaN(Number(id))) {
             const result = await query<Document>(
-                'SELECT * FROM documents WHERE id = $1',
+                'SELECT * FROM documents WHERE id = $1 AND (expires_at IS NULL OR expires_at > NOW())',
                 [id]
             );
             document = result.rows[0];
@@ -130,7 +140,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         } else {
             // Try to find by share ID - no authentication needed
             const result = await query<Document>(
-                'SELECT * FROM documents WHERE share_id = $1',
+                'SELECT * FROM documents WHERE share_id = $1 AND (expires_at IS NULL OR expires_at > NOW())',
                 [id]
             );
             document = result.rows[0];
