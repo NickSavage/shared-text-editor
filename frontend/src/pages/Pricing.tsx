@@ -145,7 +145,7 @@ const Pricing: React.FC = () => {
                                     </ListItem>
                                     <ListItem>
                                         <ListIcon as={CheckIcon} color="green.500" />
-                                        Up to 3 documents
+                                        Up to 5 documents
                                     </ListItem>
                                 </List>
                             </Box>

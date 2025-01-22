@@ -26,6 +26,7 @@ import {
   Radio,
   Stack,
   Tooltip,
+  HStack,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -50,6 +51,10 @@ const DocumentList = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const { subscriptionStatus } = useSubscription();
+
+  const isProUser = subscriptionStatus?.status === 'active';
+  const documentCount = documents.length;
+  const remainingDocs = isProUser ? null : 5 - documentCount;
 
   const fetchDocuments = async () => {
     try {
@@ -81,10 +86,21 @@ const DocumentList = () => {
       return;
     }
 
-    if (newDocVisibility === 'private' && (!subscriptionStatus || subscriptionStatus.status !== 'active')) {
+    if (newDocVisibility === 'private' && !isProUser) {
       toast({
         title: 'Pro Subscription Required',
         description: 'You need a pro subscription to create private documents',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (!isProUser && documentCount >= 5) {
+      toast({
+        title: 'Document Limit Reached',
+        description: 'Free tier users are limited to 5 documents. Please upgrade to create more documents.',
         status: 'warning',
         duration: 5000,
         isClosable: true,
@@ -140,10 +156,39 @@ const DocumentList = () => {
   return (
     <Box maxW="container.xl" mx="auto" p={6}>
       <VStack spacing={6} align="stretch">
-        <Heading size="lg">My Documents</Heading>
-        <Button colorScheme="blue" onClick={onOpen}>
-          Create New Document
-        </Button>
+        <HStack justify="space-between">
+          <Heading size="lg">My Documents</Heading>
+          {!isProUser && (
+            <HStack>
+              <Text color={documentCount >= 4 ? "orange.500" : "gray.600"}>
+                {remainingDocs} document{remainingDocs === 1 ? '' : 's'} remaining (Free Tier)
+              </Text>
+              {documentCount >= 4 && (
+                <Button
+                  size="sm"
+                  colorScheme="green"
+                  onClick={() => navigate('/pricing')}
+                >
+                  Upgrade to Pro
+                </Button>
+              )}
+            </HStack>
+          )}
+        </HStack>
+        <Tooltip 
+          label={!isProUser && documentCount >= 5 ? "Free tier users are limited to 5 documents. Please upgrade to create more documents." : ""}
+          isDisabled={isProUser || documentCount < 5}
+        >
+          <Box>
+            <Button 
+              colorScheme="blue" 
+              onClick={!isProUser && documentCount >= 5 ? () => navigate('/pricing') : onOpen}
+              isDisabled={false}
+            >
+              {!isProUser && documentCount >= 5 ? "Upgrade to Create More" : "Create New Document"}
+            </Button>
+          </Box>
+        </Tooltip>
 
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
           {documents.map((doc) => (

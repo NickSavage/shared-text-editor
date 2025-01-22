@@ -31,14 +31,30 @@ router.post('/', authenticateToken, async (req: Request<{}, {}, CreateDocumentRe
             return;
         }
 
-        // Check subscription status if trying to create a private document
-        if (visibility === 'private') {
-            const subscriptionResult = await query(
-                `SELECT status FROM subscriptions WHERE user_id = $1 AND status = 'active'`,
+        // Check subscription status
+        const subscriptionResult = await query(
+            `SELECT status FROM subscriptions WHERE user_id = $1 AND status = 'active'`,
+            [userId]
+        );
+        const isProUser = subscriptionResult.rows.length > 0;
+
+        // If not a pro user, check document count
+        if (!isProUser) {
+            const documentCountResult = await query(
+                'SELECT COUNT(*) as count FROM documents WHERE owner_id = $1',
                 [userId]
             );
+            const documentCount = parseInt(documentCountResult.rows[0].count);
+            
+            if (documentCount >= 5) {
+                res.status(403).json({ error: 'Free tier users are limited to 5 documents. Please upgrade to create more documents.' });
+                return;
+            }
+        }
 
-            if (subscriptionResult.rows.length === 0) {
+        // Check subscription status if trying to create a private document
+        if (visibility === 'private') {
+            if (!isProUser) {
                 res.status(403).json({ error: 'Pro subscription required to create private documents' });
                 return;
             }
