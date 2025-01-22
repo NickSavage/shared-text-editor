@@ -106,4 +106,36 @@ router.post('/create-checkout-session', authenticateToken, async (req: Request<{
     }
 });
 
+// Create a billing portal session
+router.post('/create-portal-session', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(401).json({ error: 'User not authenticated' });
+            return;
+        }
+
+        // Get Stripe customer ID
+        const result = await pool.query(
+            'SELECT stripe_customer_id FROM subscriptions WHERE user_id = $1',
+            [userId]
+        );
+
+        if (result.rows.length === 0 || !result.rows[0].stripe_customer_id) {
+            res.status(400).json({ error: 'No subscription found' });
+            return;
+        }
+
+        const session = await stripe.billingPortal.sessions.create({
+            customer: result.rows[0].stripe_customer_id,
+            return_url: `${process.env.FRONTEND_URL}/profile`,
+        });
+
+        res.json({ url: session.url });
+    } catch (error) {
+        console.error('Error creating portal session:', error);
+        res.status(500).json({ error: 'Failed to create portal session' });
+    }
+});
+
 export default router; 

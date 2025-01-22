@@ -9,10 +9,13 @@ import {
   Heading,
   Text,
   useToast,
+  Image,
+  Center,
 } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '../context/SubscriptionContext';
+import logo from '../assets/logo.png';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -60,6 +63,9 @@ const Register = () => {
   return (
     <Box maxW="md" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
       <VStack spacing={4} as="form" onSubmit={handleSubmit}>
+        <Center mb={4}>
+          <Image src={logo} alt="CodeScribble Logo" height="60px" />
+        </Center>
         <Heading size="lg">Register</Heading>
         
         <FormControl isRequired>

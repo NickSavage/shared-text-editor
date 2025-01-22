@@ -1,22 +1,11 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useSubscription } from '../context/SubscriptionContext';
-import {
-    Box,
-    Container,
-    VStack,
-    Heading,
-    Text,
-    Button,
-    Circle,
-    Icon,
-} from '@chakra-ui/react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Box, Button, Circle, Heading, Icon, Text, VStack } from '@chakra-ui/react';
 import { CheckIcon } from '@chakra-ui/icons';
+import { useSubscription } from '../context/SubscriptionContext';
 
-const SubscriptionSuccess: React.FC = () => {
+const SubscriptionSuccess = () => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const sessionId = searchParams.get('session_id');
     const { refreshStatus } = useSubscription();
 
     useEffect(() => {
@@ -32,7 +21,7 @@ const SubscriptionSuccess: React.FC = () => {
 
     return (
         <Box minH="100vh" bg="gray.50" py={12}>
-            <Container maxW="md">
+            <Box maxW="md">
                 <Box bg="white" p={8} shadow="md" rounded="lg">
                     <VStack spacing={6}>
                         <Circle size="12" bg="green.100">
@@ -52,7 +41,7 @@ const SubscriptionSuccess: React.FC = () => {
                         </Button>
                     </VStack>
                 </Box>
-            </Container>
+            </Box>
         </Box>
     );
 };

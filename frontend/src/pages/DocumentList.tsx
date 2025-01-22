@@ -22,9 +22,6 @@ import {
   FormLabel,
   Input,
   useDisclosure,
-  RadioGroup,
-  Radio,
-  Stack,
   Tooltip,
   HStack,
 } from '@chakra-ui/react';
@@ -37,7 +34,6 @@ interface Document {
   title: string;
   content: string;
   share_id: string;
-  visibility: 'private' | 'public';
   created_at: string;
   updated_at: string;
   expires_at: string | null;
@@ -47,7 +43,6 @@ interface Document {
 const DocumentList = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [newDocTitle, setNewDocTitle] = useState('');
-  const [newDocVisibility, setNewDocVisibility] = useState<'private' | 'public'>('public');
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
@@ -88,17 +83,6 @@ const DocumentList = () => {
       return;
     }
 
-    if (newDocVisibility === 'private' && !isProUser) {
-      toast({
-        title: 'Pro Subscription Required',
-        description: 'You need a pro subscription to create private documents',
-        status: 'warning',
-        duration: 5000,
-        isClosable: true,
-      });
-      return;
-    }
-
     if (!isProUser && documentCount >= 5) {
       toast({
         title: 'Document Limit Reached',
@@ -114,7 +98,6 @@ const DocumentList = () => {
     try {
       const response = await axios.post('/api/documents', {
         title: newDocTitle,
-        visibility: newDocVisibility,
       });
       
       setDocuments([response.data, ...documents]);
@@ -202,9 +185,6 @@ const DocumentList = () => {
                 <Text color="gray.600">
                   Share ID: {doc.share_id}
                 </Text>
-                <Text color="gray.600">
-                  Visibility: {doc.visibility}
-                </Text>
                 {doc.expires_in !== null && (
                   <Text 
                     color={doc.expires_in < 3600 ? "red.500" : "orange.500"}
@@ -276,17 +256,6 @@ const DocumentList = () => {
                 onChange={(e) => setNewDocTitle(e.target.value)}
                 placeholder="Enter document title"
               />
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>Visibility</FormLabel>
-              <RadioGroup value={newDocVisibility} onChange={(value: 'private' | 'public') => setNewDocVisibility(value)}>
-                <Stack direction="row">
-                  <Radio value="public">Public</Radio>
-                  <Tooltip label={!subscriptionStatus || subscriptionStatus.status !== 'active' ? 'Pro subscription required for private documents' : ''}>
-                    <Radio value="private" isDisabled={!subscriptionStatus || subscriptionStatus.status !== 'active'}>Private</Radio>
-                  </Tooltip>
-                </Stack>
-              </RadioGroup>
             </FormControl>
           </ModalBody>
           <ModalFooter>

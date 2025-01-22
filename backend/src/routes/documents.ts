@@ -24,7 +24,7 @@ interface CreateDocumentRequest {
 // Create a new document
 router.post('/', authenticateToken, async (req: Request<{}, {}, CreateDocumentRequest>, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { title, content = '', visibility = 'private' } = req.body;
+        const { title, content = '', visibility = 'public' } = req.body;
         const userId = req.user?.userId;
 
         if (!userId) {

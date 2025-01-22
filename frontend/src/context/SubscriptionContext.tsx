@@ -37,7 +37,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         }
 
         try {
-            const response = await axios.get('http://localhost:3000/api/subscription/status', {
+            const response = await axios.get(`/api/subscription/status`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },

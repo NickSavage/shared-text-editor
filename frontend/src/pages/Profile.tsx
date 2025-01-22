@@ -11,6 +11,7 @@ import {
   Badge,
   Divider,
   Skeleton,
+  useToast,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +21,7 @@ const Profile = () => {
   const { user } = useAuth();
   const { subscriptionStatus, isLoading } = useSubscription();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'N/A';
@@ -28,6 +30,33 @@ const Profile = () => {
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const openBillingPortal = async () => {
+    try {
+      const response = await fetch('/api/subscription/create-portal-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create portal session');
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to open billing portal',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
@@ -90,15 +119,18 @@ const Profile = () => {
 
               <Divider />
 
-              <Button
-                colorScheme="blue"
-                onClick={() => navigate('/pricing')}
-                isDisabled={subscriptionStatus?.status === 'active'}
-              >
-                {subscriptionStatus?.status === 'active'
-                  ? 'Already Subscribed'
-                  : 'Upgrade to Pro'}
-              </Button>
+              {subscriptionStatus?.status === 'active' ? (
+                <Button colorScheme="blue" onClick={openBillingPortal}>
+                  Manage Subscription
+                </Button>
+              ) : (
+                <Button
+                  colorScheme="blue"
+                  onClick={() => navigate('/pricing')}
+                >
+                  Upgrade to Pro
+                </Button>
+              )}
             </Stack>
           </CardBody>
         </Card>

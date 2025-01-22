@@ -6,7 +6,6 @@ import {
     Box,
     Button,
     Container,
-    Flex,
     Heading,
     Text,
     VStack,
@@ -29,7 +28,7 @@ const Pricing: React.FC = () => {
 
     const handleSubscribe = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/subscription/create-checkout-session', {
+            const response = await fetch(`/api/subscription/create-checkout-session`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

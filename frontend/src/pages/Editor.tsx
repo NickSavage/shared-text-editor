@@ -25,7 +25,6 @@ interface CursorPosition {
 const Editor = () => {
   const { share_id } = useParams<{ share_id: string }>();
   const [document, setDocument] = useState<Document | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user, token } = useAuth();
   const navigate = useNavigate();
@@ -40,7 +39,10 @@ const Editor = () => {
 
   // Initialize WebSocket connection
   useEffect(() => {
-    const newSocket = io('http://localhost:3000', {
+    console.log("API URL:", import.meta.env.VITE_WS_URL);
+    console.log("API URL:", import.meta.env.VITE_API_URL);
+
+    const newSocket = io(import.meta.env.VITE_API_URL, {
       auth: token ? {
         token,
       } : undefined,
@@ -88,7 +90,6 @@ const Editor = () => {
     });
 
     socketRef.current = newSocket;
-    setSocket(newSocket);
 
     return () => {
       console.log('Cleaning up socket connection');

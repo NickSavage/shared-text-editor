@@ -3,8 +3,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const pool = new Pool({
+console.error('Connection details:', {
     host: process.env.POSTGRES_HOST,
+    port: process.env.POSTGRES_PORT,
+    database: process.env.POSTGRES_DB,
+    user: process.env.POSTGRES_USER,
+});
+const pool = new Pool({
+    host: process.env.POSTGRES_HOST || 'localhost',
     port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
     database: process.env.POSTGRES_DB,
     user: process.env.POSTGRES_USER,
@@ -15,6 +21,12 @@ const pool = new Pool({
 pool.query('SELECT NOW()', (err: Error | null, res: QueryResult) => {
     if (err) {
         console.error('Database connection error:', err);
+        console.error('Connection details:', {
+            host: process.env.POSTGRES_HOST,
+            port: process.env.POSTGRES_PORT,
+            database: process.env.POSTGRES_DB,
+            user: process.env.POSTGRES_USER,
+        });
     } else {
         console.log('Database connected successfully');
     }

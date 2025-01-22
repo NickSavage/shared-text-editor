@@ -9,26 +9,20 @@ import { documentsRouter } from './routes/documents';
 import subscriptionRouter from './routes/subscription';
 import webhookRouter from './routes/webhooks';
 import { Server } from 'socket.io';
-import { cleanupExpiredDocuments } from './jobs/cleanupExpiredDocuments';
+// import { cleanupExpiredDocuments } from './jobs/cleanupExpiredDocuments';
 
 dotenv.config();
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-        methods: ['GET', 'POST'],
-    },
-});
 
 // Setup Socket.IO
 setupSocketIO(server);
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite's default port
-  credentials: true
+    origin: process.env.FRONTEND_URL,
+    credentials: true
 }));
 
 // Register webhook route before body parser
@@ -43,10 +37,10 @@ app.use('/api/documents', documentsRouter);
 app.use('/api/subscription', subscriptionRouter);
 
 // Run cleanup job every hour
-setInterval(cleanupExpiredDocuments, 60 * 60 * 1000);
+// setInterval(cleanupExpiredDocuments, 60 * 60 * 1000);
 
 // Run cleanup on startup
-cleanupExpiredDocuments();
+//cleanupExpiredDocuments();
 
 // Error handling
 app.use(errorHandler);
