@@ -15,7 +15,7 @@ export default stripe;
 
 export const STRIPE_CONFIG = {
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-    monthlyPriceId: process.env.STRIPE_MONTHLY_PRICE_ID,
-    annualPriceId: process.env.STRIPE_ANNUAL_PRICE_ID,
+    monthlyPriceId: "price_1QjsFKCT2XDlG7vR2MSNGPAg",
+    annualPriceId: "price_1QjsFHCT2XDlG7vRGGAPWT5C",
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
 }; 
