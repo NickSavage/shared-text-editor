@@ -27,6 +27,11 @@ interface LoginRequest {
   password: string;
 }
 
+console.log(
+  process.env.MAIL_HOST,
+  process.env.MAIL_USER,
+  process.env.MAIL_PASS,
+);
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
   port: 587, // Replace with your SMTP port
@@ -211,6 +216,7 @@ router.post(
         .status(200)
         .json({ message: "Password reset email has been sent successfully" });
     } catch (error) {
+      console.error("Error in password request:", error);
       next(error);
     }
   },
