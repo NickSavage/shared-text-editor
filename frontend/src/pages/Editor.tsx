@@ -1,16 +1,24 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Heading, HStack, Button, useToast, VStack, Text } from '@chakra-ui/react';
-import { Editor as MonacoEditor } from '@monaco-editor/react';
-import { io, Socket } from 'socket.io-client';
-import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Box,
+  Heading,
+  HStack,
+  Button,
+  useToast,
+  VStack,
+  Text,
+} from "@chakra-ui/react";
+import { Editor as MonacoEditor } from "@monaco-editor/react";
+import { io, Socket } from "socket.io-client";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 interface Document {
   id: number;
   title: string;
   content: string;
-  visibility: 'private' | 'public';
+  visibility: "private" | "public";
   created_at: string;
 }
 
@@ -43,56 +51,58 @@ const Editor = () => {
     console.log("API URL:", import.meta.env.VITE_API_URL);
 
     const newSocket = io(import.meta.env.VITE_API_URL, {
-      auth: token ? {
-        token,
-      } : undefined,
+      auth: token
+        ? {
+            token,
+          }
+        : undefined,
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
 
-    newSocket.on('connect', () => {
-      console.log('Connected to WebSocket');
+    newSocket.on("connect", () => {
+      console.log("Connected to WebSocket");
       if (share_id) {
-        newSocket.emit('join-document', share_id);
+        newSocket.emit("join-document", share_id);
       }
     });
 
-    newSocket.on('error', (error: string) => {
-      console.error('Socket error:', error);
+    newSocket.on("error", (error: string) => {
+      console.error("Socket error:", error);
       toast({
-        title: 'Error',
+        title: "Error",
         description: error,
-        status: 'error',
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
-      if (error.includes('Authentication required')) {
-        navigate('/login');
+      if (error.includes("Authentication required")) {
+        navigate("/login");
       }
     });
 
-    newSocket.on('reconnect', () => {
-      console.log('Reconnected to WebSocket');
+    newSocket.on("reconnect", () => {
+      console.log("Reconnected to WebSocket");
       if (share_id) {
-        newSocket.emit('join-document', share_id);
+        newSocket.emit("join-document", share_id);
       }
     });
 
-    newSocket.on('document-change', (newContent: string) => {
-      console.log('Received document change:', newContent);
-      setDocument(prev => prev ? { ...prev, content: newContent } : null);
+    newSocket.on("document-change", (newContent: string) => {
+      console.log("Received document change:", newContent);
+      setDocument((prev) => (prev ? { ...prev, content: newContent } : null));
     });
 
-    newSocket.on('cursor-update', (positions: CursorPosition[]) => {
+    newSocket.on("cursor-update", (positions: CursorPosition[]) => {
       // TODO: Implement cursor decorations in Monaco
-      console.log('Cursor positions:', positions);
+      console.log("Cursor positions:", positions);
     });
 
     socketRef.current = newSocket;
 
     return () => {
-      console.log('Cleaning up socket connection');
+      console.log("Cleaning up socket connection");
       newSocket.disconnect();
       socketRef.current = null;
     };
@@ -106,9 +116,10 @@ const Editor = () => {
         setDocument(response.data);
       } catch (error: any) {
         toast({
-          title: 'Document Not Found',
-          description: 'This document does not exist or you do not have permission to view it.',
-          status: 'error',
+          title: "Document Not Found",
+          description:
+            "This document does not exist or you do not have permission to view it.",
+          status: "error",
           duration: null,
           isClosable: true,
         });
@@ -131,29 +142,52 @@ const Editor = () => {
         if (timeout) clearTimeout(timeout);
         timeout = setTimeout(() => {
           if (!value || !socketRef.current || !documentRef.current) return;
-          console.log('Sending document change:', value);
-          socketRef.current.emit('document-change', {
+          console.log("Sending document change:", value);
+          socketRef.current.emit("document-change", {
             documentId: share_id,
             content: value,
           });
         }, 500); // 500ms debounce
       };
     })(),
-    [share_id]
+    [share_id],
   );
 
-  const handleEditorChange = useCallback((value: string | undefined) => {
-    if (!value) return;
-    // Update local state immediately
-    setDocument(prev => prev ? { ...prev, content: value } : null);
-    // Debounce the socket emission
-    debouncedChange(value);
-  }, [debouncedChange]);
+  const handleEditorChange = useCallback(
+    (value: string | undefined) => {
+      if (!value) return;
+      const MAX_CHARS = 50000;
+      // Update local state immediately
+      // Check character limit
+      if (value.length > MAX_CHARS) {
+        toast({
+          title: "Character Limit Exceeded",
+          description: `Document cannot exceed ${MAX_CHARS.toLocaleString()} characters`,
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        const truncatedValue = value.slice(0, MAX_CHARS);
+        // Update local state with truncated content
+        setDocument((prev) =>
+          prev ? { ...prev, content: truncatedValue } : null,
+        );
+
+        // Emit truncated content
+        debouncedChange(truncatedValue);
+        return;
+      }
+      setDocument((prev) => (prev ? { ...prev, content: value } : null));
+      // Debounce the socket emission
+      debouncedChange(value);
+    },
+    [debouncedChange],
+  );
 
   const handleEditorMount = (editor: any) => {
     editor.onDidChangeCursorPosition((e: any) => {
       if (socketRef.current && user) {
-        socketRef.current.emit('cursor-update', {
+        socketRef.current.emit("cursor-update", {
           documentId: share_id,
           position: e.position,
         });
@@ -168,8 +202,10 @@ const Editor = () => {
   if (!document) {
     return (
       <Box p={6}>
-        <Heading size="md" mb={4}>Document Not Found</Heading>
-        <Button onClick={() => navigate('/')}>Back to Documents</Button>
+        <Heading size="md" mb={4}>
+          Document Not Found
+        </Heading>
+        <Button onClick={() => navigate("/")}>Back to Documents</Button>
       </Box>
     );
   }
@@ -187,9 +223,9 @@ const Editor = () => {
                 const shareUrl = `${window.location.origin}/document/${share_id}`;
                 navigator.clipboard.writeText(shareUrl);
                 toast({
-                  title: 'Share link copied!',
-                  description: 'You can now share this link with others',
-                  status: 'success',
+                  title: "Share link copied!",
+                  description: "You can now share this link with others",
+                  status: "success",
                   duration: 3000,
                   isClosable: true,
                 });
@@ -197,14 +233,17 @@ const Editor = () => {
             >
               Copy Share Link
             </Button>
-            <Button size="sm" onClick={() => navigate('/')}>Back to Documents</Button>
+            <Button size="sm" onClick={() => navigate("/")}>
+              Back to Documents
+            </Button>
           </HStack>
         </HStack>
         <Text color="gray.600" fontSize="sm">
-          Created: {new Date(document.created_at).toLocaleDateString()} {new Date(document.created_at).toLocaleTimeString()}
+          Created: {new Date(document.created_at).toLocaleDateString()}{" "}
+          {new Date(document.created_at).toLocaleTimeString()}
         </Text>
       </VStack>
-      
+
       <Box flex={1}>
         <MonacoEditor
           height="100%"
@@ -216,7 +255,7 @@ const Editor = () => {
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
             fontSize: 14,
-            wordWrap: 'on',
+            wordWrap: "on",
             quickSuggestions: false,
             suggestOnTriggerCharacters: false,
             parameterHints: { enabled: false },
@@ -254,4 +293,4 @@ const Editor = () => {
   );
 };
 
-export default Editor; 
+export default Editor;
