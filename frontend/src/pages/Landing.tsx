@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext"; // Add this import
+import { FaTwitter, FaEnvelope } from "react-icons/fa";
 
 import {
   Box,
@@ -169,6 +170,43 @@ const Landing = () => {
               />
             </Stack>
           </VStack>
+        </Container>
+      </Box>
+      <Box
+        bg={useColorModeValue("gray.50", "gray.900")}
+        color={useColorModeValue("gray.700", "gray.200")}
+      >
+        <Container as={Stack} maxW={"7xl"} py={10}>
+          <Stack
+            direction={{ base: "column", md: "row" }}
+            spacing={4}
+            justify={{ base: "center", md: "space-between" }}
+            align={{ base: "center", md: "center" }}
+          >
+            <Text>© 2024 CodeScribble. All rights reserved</Text>
+            <Stack direction={"row"} spacing={6}>
+              <Button
+                leftIcon={<FaEnvelope />}
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  (window.location.href = "mailto:nick@codescribble.com")
+                }
+              >
+                nick@codescribble.com
+              </Button>
+              <Button
+                leftIcon={<FaTwitter />}
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  window.open("https://x.com/impossibilium", "_blank")
+                }
+              >
+                @impossibilium
+              </Button>
+            </Stack>
+          </Stack>
         </Container>
       </Box>
     </Box>
