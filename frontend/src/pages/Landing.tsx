@@ -63,8 +63,7 @@ const Landing = () => {
             </Heading>
             <Text color={"gray.500"}>
               Edit code in real-time with your team. Share instantly with
-              anyone. Perfect for pair programming, teaching, and quick code
-              sharing.
+              anyone. Perfect for pair programming, interviews and teaching.
             </Text>
             <Stack
               spacing={{ base: 4, sm: 6 }}
