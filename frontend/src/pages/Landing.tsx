@@ -83,15 +83,6 @@ const Landing = () => {
                   >
                     My Documents
                   </Button>
-                  <Button
-                    rounded={"full"}
-                    size={"lg"}
-                    fontWeight={"normal"}
-                    px={6}
-                    onClick={() => navigate("/documents/new")}
-                  >
-                    New Document
-                  </Button>
                 </>
               ) : (
                 // Show these buttons for non-logged-in users
@@ -135,7 +126,7 @@ const Landing = () => {
                 align={"center"}
                 w={"100%"}
                 h={"100%"}
-                src={"https://via.placeholder.com/800x400"} // Replace with your actual editor screenshot
+                src={"/hero-image.png"} // Replace with your actual editor screenshot
               />
             </Box>
           </Box>
