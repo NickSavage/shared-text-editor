@@ -115,6 +115,49 @@ router.post(
         user: { id: user.id, email: user.email, username: user.username },
         token,
       });
+
+      // Send welcome email and notification after response (non-blocking)
+      const sendEmails = async () => {
+        try {
+          await Promise.all([
+            // Welcome email to user
+            transporter.sendMail({
+              from: "info@codescribble.com",
+              to: user.email,
+              subject: "Welcome to CodeScribble!",
+              text: `Welcome to CodeScribble! Your account has been successfully created.`,
+              html: `
+                <h1>Welcome to CodeScribble!</h1>
+                <p>Your account has been successfully created.</p>
+                <p>You can now start using our services.</p>
+              `,
+            }),
+
+            // Notification email to admin
+            transporter.sendMail({
+              from: "info@codescribble.com",
+              to: "nick@nicksavage.ca",
+              subject: "New User Registration",
+              text: `A new user has registered with email: ${email}`,
+              html: `
+                <h2>New User Registration</h2>
+                <p>A new user has registered with the following details:</p>
+                <ul>
+                  <li>Email: ${email}</li>
+                  <li>User ID: ${user.id}</li>
+                  <li>Time: ${new Date().toISOString()}</li>
+                </ul>
+              `,
+            }),
+          ]);
+        } catch (error) {
+          console.error("Error sending emails:", error);
+          // Handle error silently since response is already sent
+        }
+      };
+
+      // Fire and forget - don't await
+      sendEmails();
     } catch (error) {
       next(error);
     }
