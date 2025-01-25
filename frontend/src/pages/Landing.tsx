@@ -111,24 +111,16 @@ const Landing = () => {
             </Stack>
           </Stack>
           <Box flex={1} position={"relative"} w={"full"}>
-            {/* You can add a screenshot or illustration of your editor here */}
-            <Box
-              position={"relative"}
-              height={"300px"}
-              rounded={"2xl"}
+            <Image
+              alt={"Hero Image"}
+              fit={"cover"}
+              align={"center"}
+              w={"100%"}
+              h={"100%"}
+              src={"hero-image.png"}
+              borderRadius={"2xl"}
               boxShadow={"2xl"}
-              width={"full"}
-              overflow={"hidden"}
-            >
-              <Image
-                alt={"Hero Image"}
-                fit={"cover"}
-                align={"center"}
-                w={"100%"}
-                h={"100%"}
-                src={"/hero-image.png"} // Replace with your actual editor screenshot
-              />
-            </Box>
+            />
           </Box>
         </Stack>
       </Container>
