@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -24,10 +24,10 @@ import {
   useDisclosure,
   Tooltip,
   HStack,
-} from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { useSubscription } from '../context/SubscriptionContext';
+} from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useSubscription } from "../context/SubscriptionContext";
 
 interface Document {
   id: number;
@@ -42,26 +42,26 @@ interface Document {
 
 const DocumentList = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [newDocTitle, setNewDocTitle] = useState('');
+  const [newDocTitle, setNewDocTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
   const toast = useToast();
   const { subscriptionStatus } = useSubscription();
 
-  const isProUser = subscriptionStatus?.status === 'active';
+  const isProUser = subscriptionStatus?.status === "active";
   const documentCount = documents.length;
   const remainingDocs = isProUser ? null : 5 - documentCount;
 
   const fetchDocuments = async () => {
     try {
-      const response = await axios.get('/api/documents');
+      const response = await axios.get("/api/documents");
       setDocuments(response.data);
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.response?.data?.error || 'Failed to fetch documents',
-        status: 'error',
+        title: "Error",
+        description: error.response?.data?.error || "Failed to fetch documents",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -69,15 +69,16 @@ const DocumentList = () => {
   };
 
   useEffect(() => {
+    console.log("getting docs");
     fetchDocuments();
   }, []);
 
   const handleCreateDocument = async () => {
     if (!newDocTitle.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please enter a title for the document',
-        status: 'error',
+        title: "Error",
+        description: "Please enter a title for the document",
+        status: "error",
         duration: 3000,
       });
       return;
@@ -85,9 +86,10 @@ const DocumentList = () => {
 
     if (!isProUser && documentCount >= 5) {
       toast({
-        title: 'Document Limit Reached',
-        description: 'Free tier users are limited to 5 documents. Please upgrade to create more documents.',
-        status: 'warning',
+        title: "Document Limit Reached",
+        description:
+          "Free tier users are limited to 5 documents. Please upgrade to create more documents.",
+        status: "warning",
         duration: 5000,
         isClosable: true,
       });
@@ -96,19 +98,19 @@ const DocumentList = () => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post('/api/documents', {
+      const response = await axios.post("/api/documents", {
         title: newDocTitle,
       });
-      
+
       setDocuments([response.data, ...documents]);
       onClose();
-      setNewDocTitle('');
+      setNewDocTitle("");
       navigate(`/document/${response.data.share_id}`);
     } catch (error: any) {
       toast({
-        title: 'Error creating document',
-        description: error.response?.data?.error || 'Something went wrong',
-        status: 'error',
+        title: "Error creating document",
+        description: error.response?.data?.error || "Something went wrong",
+        status: "error",
         duration: 3000,
       });
     } finally {
@@ -121,17 +123,17 @@ const DocumentList = () => {
       await axios.delete(`/api/documents/${id}`);
       fetchDocuments();
       toast({
-        title: 'Success',
-        description: 'Document deleted',
-        status: 'success',
+        title: "Success",
+        description: "Document deleted",
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.response?.data?.error || 'Failed to delete document',
-        status: 'error',
+        title: "Error",
+        description: error.response?.data?.error || "Failed to delete document",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -146,13 +148,14 @@ const DocumentList = () => {
           {!isProUser && (
             <HStack>
               <Text color={documentCount >= 4 ? "orange.500" : "gray.600"}>
-                {remainingDocs} document{remainingDocs === 1 ? '' : 's'} remaining (Free Tier)
+                {remainingDocs} document{remainingDocs === 1 ? "" : "s"}{" "}
+                remaining (Free Tier)
               </Text>
               {documentCount >= 4 && (
                 <Button
                   size="sm"
                   colorScheme="green"
-                  onClick={() => navigate('/pricing')}
+                  onClick={() => navigate("/pricing")}
                 >
                   Upgrade to Pro
                 </Button>
@@ -160,17 +163,27 @@ const DocumentList = () => {
             </HStack>
           )}
         </HStack>
-        <Tooltip 
-          label={!isProUser && documentCount >= 5 ? "Free tier users are limited to 5 documents. Please upgrade to create more documents." : ""}
+        <Tooltip
+          label={
+            !isProUser && documentCount >= 5
+              ? "Free tier users are limited to 5 documents. Please upgrade to create more documents."
+              : ""
+          }
           isDisabled={isProUser || documentCount < 5}
         >
           <Box>
-            <Button 
-              colorScheme="blue" 
-              onClick={!isProUser && documentCount >= 5 ? () => navigate('/pricing') : onOpen}
+            <Button
+              colorScheme="blue"
+              onClick={
+                !isProUser && documentCount >= 5
+                  ? () => navigate("/pricing")
+                  : onOpen
+              }
               isDisabled={false}
             >
-              {!isProUser && documentCount >= 5 ? "Upgrade to Create More" : "Create New Document"}
+              {!isProUser && documentCount >= 5
+                ? "Upgrade to Create More"
+                : "Create New Document"}
             </Button>
           </Box>
         </Tooltip>
@@ -182,28 +195,27 @@ const DocumentList = () => {
                 <Heading size="md">{doc.title}</Heading>
               </CardHeader>
               <CardBody>
-                <Text color="gray.600">
-                  Share ID: {doc.share_id}
-                </Text>
+                <Text color="gray.600">Share ID: {doc.share_id}</Text>
                 {doc.expires_in !== null && (
-                  <Text 
+                  <Text
                     color={doc.expires_in < 3600 ? "red.500" : "orange.500"}
                     fontWeight="medium"
                   >
-                    Expires in: {
-                      doc.expires_in > 3600 
-                        ? `${Math.floor(doc.expires_in / 3600)} hours` 
-                        : doc.expires_in > 60 
-                          ? `${Math.floor(doc.expires_in / 60)} minutes` 
-                          : `${doc.expires_in} seconds`
-                    }
+                    Expires in:{" "}
+                    {doc.expires_in > 3600
+                      ? `${Math.floor(doc.expires_in / 3600)} hours`
+                      : doc.expires_in > 60
+                        ? `${Math.floor(doc.expires_in / 60)} minutes`
+                        : `${doc.expires_in} seconds`}
                   </Text>
                 )}
                 <Text color="gray.600" mt={2}>
-                  Created: {new Date(doc.created_at).toLocaleDateString()} {new Date(doc.created_at).toLocaleTimeString()}
+                  Created: {new Date(doc.created_at).toLocaleDateString()}{" "}
+                  {new Date(doc.created_at).toLocaleTimeString()}
                 </Text>
                 <Text color="gray.600">
-                  Last modified: {new Date(doc.updated_at).toLocaleDateString()} {new Date(doc.updated_at).toLocaleTimeString()}
+                  Last modified: {new Date(doc.updated_at).toLocaleDateString()}{" "}
+                  {new Date(doc.updated_at).toLocaleTimeString()}
                 </Text>
               </CardBody>
               <CardFooter>
@@ -221,9 +233,9 @@ const DocumentList = () => {
                     const shareUrl = `${window.location.origin}/document/${doc.share_id}`;
                     navigator.clipboard.writeText(shareUrl);
                     toast({
-                      title: 'Share link copied!',
-                      description: 'You can now share this link with others',
-                      status: 'success',
+                      title: "Share link copied!",
+                      description: "You can now share this link with others",
+                      status: "success",
                       duration: 3000,
                       isClosable: true,
                     });
@@ -276,4 +288,4 @@ const DocumentList = () => {
   );
 };
 
-export default DocumentList; 
+export default DocumentList;
