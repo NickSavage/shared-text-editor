@@ -28,6 +28,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSubscription } from "../context/SubscriptionContext";
+import { useAuth } from "../context/AuthContext";
 
 interface Document {
   id: number;
@@ -43,7 +44,8 @@ interface Document {
 const DocumentList = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [newDocTitle, setNewDocTitle] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading: authLoading } = useAuth();
+  const [isCreatingDoc, setIsCreatingDoc] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
   const toast = useToast();
@@ -69,9 +71,11 @@ const DocumentList = () => {
   };
 
   useEffect(() => {
+    if (authLoading) return;
+
     console.log("getting docs");
     fetchDocuments();
-  }, []);
+  }, [authLoading]);
 
   const handleCreateDocument = async () => {
     if (!newDocTitle.trim()) {
@@ -96,7 +100,7 @@ const DocumentList = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsCreatingDoc(true);
     try {
       const response = await axios.post("/api/documents", {
         title: newDocTitle,
@@ -114,7 +118,7 @@ const DocumentList = () => {
         duration: 3000,
       });
     } finally {
-      setIsLoading(false);
+      setIsCreatingDoc(false);
     }
   };
 
@@ -277,7 +281,7 @@ const DocumentList = () => {
             <Button
               colorScheme="blue"
               onClick={handleCreateDocument}
-              isLoading={isLoading}
+              isLoading={isCreatingDoc}
             >
               Create
             </Button>
