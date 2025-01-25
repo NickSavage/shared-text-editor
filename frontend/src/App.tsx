@@ -12,6 +12,8 @@ import Profile from "./pages/Profile";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import SubscriptionCancel from "./pages/SubscriptionCancel";
 import Landing from "./pages/Landing";
+import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -50,6 +52,8 @@ function App() {
                 path="/subscription/cancel"
                 element={<SubscriptionCancel />}
               />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
           </div>
         </SubscriptionProvider>

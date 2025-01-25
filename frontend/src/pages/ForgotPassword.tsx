@@ -12,16 +12,14 @@ import {
   Image,
   Center,
 } from "@chakra-ui/react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link as RouterLink } from "react-router-dom";
 import logo from "../assets/logo.png";
+import axios from "axios";
 
-const Login = () => {
+const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,12 +27,12 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      navigate("/");
+      await axios.post("/api/auth/password-reset/request", { email });
+      setIsSubmitted(true);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.error || "Failed to login",
+        description: error.response?.data?.error || "Something went wrong",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -44,13 +42,28 @@ const Login = () => {
     }
   };
 
+  if (isSubmitted) {
+    return (
+      <Box maxW="md" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
+        <VStack spacing={4}>
+          <Heading size="lg">Check Your Email</Heading>
+          <Text textAlign="center">
+            If an account exists with this email, you will receive password
+            reset instructions.
+          </Text>
+          <RouterLink to="/login">Return to Login</RouterLink>
+        </VStack>
+      </Box>
+    );
+  }
+
   return (
     <Box maxW="md" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
       <VStack spacing={4} as="form" onSubmit={handleSubmit}>
         <Center mb={4}>
           <Image src={logo} alt="CodeScribble Logo" height="60px" />
         </Center>
-        <Heading size="lg">Login</Heading>
+        <Heading size="lg">Reset Password</Heading>
 
         <FormControl isRequired>
           <FormLabel>Email</FormLabel>
@@ -61,36 +74,22 @@ const Login = () => {
           />
         </FormControl>
 
-        <FormControl isRequired>
-          <FormLabel>Password</FormLabel>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </FormControl>
-
         <Button
           type="submit"
           colorScheme="blue"
           width="full"
           isLoading={isLoading}
         >
-          Login
+          Send Reset Instructions
         </Button>
 
-        <VStack spacing={2} width="full">
-          <Text>
-            Don't have an account?{" "}
-            <RouterLink to="/register">Register here</RouterLink>
-          </Text>
-          <Text>
-            <RouterLink to="/forgot-password">Forgot your password?</RouterLink>
-          </Text>
-        </VStack>
+        <Text>
+          Remember your password?{" "}
+          <RouterLink to="/login">Login here</RouterLink>
+        </Text>
       </VStack>
     </Box>
   );
 };
 
-export default Login;
+export default ForgotPassword;

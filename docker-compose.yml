@@ -59,6 +59,9 @@ services:
       - STRIPE_MONTHLY_PRICE_ID=${STRIPE_MONTHLY_PRICE_ID}
       - STRIPE_ANNUAL_PRICE_ID=${STRIPE_ANNUAL_PRICE_ID}
       - DOMAIN=${DOMAIN}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASS=${MAIL_PASS}
     depends_on:
       postgres:
         condition: service_healthy
