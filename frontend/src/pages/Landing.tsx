@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext"; // Add this import
 
@@ -12,7 +11,6 @@ import {
   Icon,
   useColorModeValue,
   VStack,
-  HStack,
   Image,
 } from "@chakra-ui/react";
 import { FaUsers, FaLock, FaBolt } from "react-icons/fa";
@@ -121,13 +119,7 @@ const Landing = () => {
               )}
             </Stack>
           </Stack>
-          <Box
-            flex={1}
-            justify={"center"}
-            align={"center"}
-            position={"relative"}
-            w={"full"}
-          >
+          <Box flex={1} position={"relative"} w={"full"}>
             {/* You can add a screenshot or illustration of your editor here */}
             <Box
               position={"relative"}

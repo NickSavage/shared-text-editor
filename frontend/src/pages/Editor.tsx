@@ -259,12 +259,6 @@ const Editor = () => {
             quickSuggestions: false,
             suggestOnTriggerCharacters: false,
             parameterHints: { enabled: false },
-            typescript: { validate: false },
-            // Disable all validation
-            diagnostics: {
-              noSemanticValidation: true,
-              noSyntaxValidation: true,
-            },
             // Disable error highlighting
             renderValidationDecorations: "off",
             suggest: {
