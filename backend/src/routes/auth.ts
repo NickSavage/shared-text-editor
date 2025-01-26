@@ -369,4 +369,30 @@ router.post(
     }
   },
 );
+
+// GitHub OAuth Routes
+router.get('/github', passport.authenticate('github', { session: false }));
+
+router.get('/github/callback',
+  passport.authenticate('github', { session: false, failureRedirect: '/login' }),
+  async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // Generate JWT using existing system
+      const token = jwt.sign(
+        { userId: user.id },
+        process.env.JWT_SECRET || 'your-secret-key',
+        { expiresIn: '24h' }
+      );
+
+      // Redirect to frontend with token
+      res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}`);
+    } catch (error) {
+      console.error('GitHub auth error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=github_failed`);
+    }
+  }
+);
+
 export const authRouter = router;
