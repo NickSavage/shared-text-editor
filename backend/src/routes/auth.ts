@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import { query } from "../config/db";
 import { authenticateToken } from "../middleware/auth";
 import nodemailer from "nodemailer";
+import passport from 'passport';
+import { Strategy as GitHubStrategy } from 'passport-github2';
 const crypto = require("crypto");
 
 const router = Router();
@@ -15,7 +17,57 @@ interface User {
   username: string;
   reset_token?: string;
   reset_token_expires?: Date;
+  github_id?: string;
+  github_username?: string;
 }
+
+// Passport GitHub Strategy Configuration
+passport.use(new GitHubStrategy({
+  clientID: process.env.GITHUB_CLIENT_ID!,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+  callbackURL: process.env.GITHUB_CALLBACK_URL!,
+  scope: ['user:email']
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    // Try to find existing user
+    const existingUser = await query<User>(
+      `SELECT * FROM users WHERE github_id = $1 OR email = $2`,
+      [profile.id, profile.emails?.[0]?.value]
+    );
+
+    if (existingUser.rows.length > 0) {
+      const user = existingUser.rows[0];
+      // Update GitHub ID if missing
+      if (!user.github_id) {
+        await query(
+          `UPDATE users SET github_id = $1 WHERE id = $2`,
+          [profile.id, user.id]
+        );
+      }
+      return done(null, user);
+    }
+
+    // Create new user if none exists
+    const email = profile.emails?.[0]?.value;
+    if (!email) return done(new Error('GitHub account requires a verified email'));
+
+    const newUser = await query<User>(
+      `INSERT INTO users (github_id, email, username, github_username)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, email, username, github_id, github_username`,
+      [
+        profile.id,
+        email,
+        profile.username || email.split('@')[0],
+        profile.username || profile.displayName
+      ]
+    );
+
+    done(null, newUser.rows[0]);
+  } catch (error) {
+    done(error);
+  }
+}));
 
 interface RegisterRequest {
   email: string;
