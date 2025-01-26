@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Pool } from 'pg';
 
-interface UserPayload {
+export interface UserPayload {
     userId: number;
     // add other payload properties as needed
 }

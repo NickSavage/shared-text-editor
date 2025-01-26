@@ -8,6 +8,7 @@ import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 const crypto = require("crypto");
 import { Profile } from 'passport-github2';
+import { UserPayload } from "../middleware/auth";
 
 const router = Router();
 
@@ -385,7 +386,7 @@ router.get('/github/callback',
   passport.authenticate('github', { session: false, failureRedirect: '/login' }),
   async (req, res) => {
     try {
-      const user = req.user as Pick<User, 'id'>;
+      const user = req.user as UserPayload & Pick<User, 'id'>;
       
       // Generate JWT using existing system
       const token = jwt.sign(
