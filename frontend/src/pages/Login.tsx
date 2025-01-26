@@ -11,10 +11,13 @@ import {
   useToast,
   Image,
   Center,
+  HStack,
+  Divider,
 } from "@chakra-ui/react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
+import { FaGithub } from "react-icons/fa";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -23,6 +26,10 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+
+  const handleGitHubLogin = () => {
+    window.location.href = '/api/auth/github';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +58,22 @@ const Login = () => {
           <Image src={logo} alt="CodeScribble Logo" height="60px" />
         </Center>
         <Heading size="lg">Login</Heading>
+        <Button
+          leftIcon={<FaGithub />}
+          width="full"
+          onClick={handleGitHubLogin}
+          colorScheme="gray"
+        >
+          Continue with GitHub
+        </Button>
+
+        <HStack width="full">
+          <Divider />
+          <Text fontSize="sm" color="gray.500" whiteSpace="nowrap">
+            or login with email
+          </Text>
+          <Divider />
+        </HStack>
 
         <FormControl isRequired>
           <FormLabel>Email</FormLabel>

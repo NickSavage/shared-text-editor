@@ -13,6 +13,7 @@ interface AuthContextType {
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  loginWithToken: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -94,8 +95,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     delete axios.defaults.headers.common['Authorization'];
   };
 
+  const loginWithToken = async (token: string) => {
+    try {
+      setToken(token);
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // Fetch user data
+      const response = await axios.get('/api/auth/me');
+      setUser(response.data.user);
+    } catch (error) {
+      console.error('Error logging in with token:', error);
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, isLoading, loginWithToken }}>
       {children}
     </AuthContext.Provider>
   );

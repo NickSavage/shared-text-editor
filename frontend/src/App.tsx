@@ -14,6 +14,7 @@ import SubscriptionCancel from "./pages/SubscriptionCancel";
 import Landing from "./pages/Landing";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import AuthCallback from "./pages/AuthCallback";
 
 function App() {
   return (
@@ -23,10 +24,11 @@ function App() {
           <div className="min-h-screen bg-gray-50">
             <Navbar />
             <Routes>
-              <Route path="/" element={<Landing />} /> {/* Add this line */}
+              <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/auth-callback" element={<AuthCallback />} />
               <Route
                 path="/profile"
                 element={

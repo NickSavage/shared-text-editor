@@ -11,10 +11,13 @@ import {
   useToast,
   Image,
   Center,
+  Divider,
+  HStack,
 } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '../context/SubscriptionContext';
+import { FaGithub } from 'react-icons/fa';
 import logo from '../assets/logo.png';
 
 const Register = () => {
@@ -60,6 +63,10 @@ const Register = () => {
     }
   };
 
+  const handleGitHubLogin = () => {
+    window.location.href = '/api/auth/github';
+  };
+
   return (
     <Box maxW="md" mx="auto" mt={8} p={6} borderWidth={1} borderRadius="lg">
       <VStack spacing={4} as="form" onSubmit={handleSubmit}>
@@ -68,6 +75,23 @@ const Register = () => {
         </Center>
         <Heading size="lg">Register</Heading>
         
+        <Button
+          leftIcon={<FaGithub />}
+          width="full"
+          onClick={handleGitHubLogin}
+          colorScheme="gray"
+        >
+          Continue with GitHub
+        </Button>
+
+        <HStack width="full">
+          <Divider />
+          <Text fontSize="sm" color="gray.500" whiteSpace="nowrap">
+            or register with email
+          </Text>
+          <Divider />
+        </HStack>
+
         <FormControl isRequired>
           <FormLabel>Email</FormLabel>
           <Input

@@ -62,6 +62,9 @@ services:
       - MAIL_HOST=${MAIL_HOST}
       - MAIL_USER=${MAIL_USER}
       - MAIL_PASS=${MAIL_PASS}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - GITHUB_CALLBACK_URL=${GITHUB_CALLBACK_URL}
     depends_on:
       postgres:
         condition: service_healthy

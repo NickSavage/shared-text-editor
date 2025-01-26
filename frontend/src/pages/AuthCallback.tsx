@@ -7,15 +7,19 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    
-    if (token) {
-      loginWithToken(token);
-      navigate('/documents');
-    } else {
-      navigate('/login');
-    }
+    const handleCallback = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+      
+      if (token) {
+        await loginWithToken(token);
+        navigate('/documents');
+      } else {
+        navigate('/login');
+      }
+    };
+
+    handleCallback();
   }, []);
 
   return null; // Or loading spinner
