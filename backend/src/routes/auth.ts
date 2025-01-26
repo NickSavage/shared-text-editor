@@ -52,20 +52,27 @@ passport.use(new GitHubStrategy({
     const email = profile.emails?.[0]?.value;
     if (!email) return done(new Error('GitHub account requires a verified email'));
 
+    // Generate a random password hash for GitHub users
+    const salt = await bcrypt.genSalt(10);
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    const passwordHash = await bcrypt.hash(randomPassword, salt);
+
     const newUser = await query<User>(
-      `INSERT INTO users (github_id, email, username, github_username)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO users (github_id, email, username, github_username, password_hash)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING id, email, username, github_id, github_username`,
       [
         profile.id,
         email,
         profile.username || email.split('@')[0],
-        profile.username || profile.displayName
+        profile.username || profile.displayName,
+        passwordHash  // Add the password hash here
       ]
     );
 
     done(null, newUser.rows[0]);
   } catch (error) {
+    console.error('GitHub auth error:', error);
     done(error as Error);
   }
 }));
@@ -376,14 +383,9 @@ router.get('/github', passport.authenticate('github', { session: false }));
 
 router.get('/github/callback',
   passport.authenticate('github', { session: false, failureRedirect: '/login' }),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     try {
-      // Type guard for user object
-      if (!req.user || typeof (req.user as any).id !== 'number') {
-        throw new Error('Invalid user data');
-      }
-
-      const user = { id: (req.user as any).id };
+      const user = req.user as Pick<User, 'id'>;
       
       // Generate JWT using existing system
       const token = jwt.sign(
