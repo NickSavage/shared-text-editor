@@ -7,6 +7,7 @@ import nodemailer from "nodemailer";
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 const crypto = require("crypto");
+import { Profile } from 'passport-github2';
 
 const router = Router();
 
@@ -27,7 +28,7 @@ passport.use(new GitHubStrategy({
   clientSecret: process.env.GITHUB_CLIENT_SECRET!,
   callbackURL: process.env.GITHUB_CALLBACK_URL!,
   scope: ['user:email']
-}, async (accessToken, refreshToken, profile, done) => {
+}, async (accessToken: string, refreshToken: string, profile: Profile, done: (error: Error | null, user?: User) => void) => {
   try {
     // Try to find existing user
     const existingUser = await query<User>(
@@ -65,7 +66,7 @@ passport.use(new GitHubStrategy({
 
     done(null, newUser.rows[0]);
   } catch (error) {
-    done(error);
+    done(error as Error);
   }
 }));
 
@@ -375,9 +376,14 @@ router.get('/github', passport.authenticate('github', { session: false }));
 
 router.get('/github/callback',
   passport.authenticate('github', { session: false, failureRedirect: '/login' }),
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
-      const user = req.user as User;
+      // Type guard for user object
+      if (!req.user || typeof (req.user as any).id !== 'number') {
+        throw new Error('Invalid user data');
+      }
+
+      const user = { id: (req.user as any).id };
       
       // Generate JWT using existing system
       const token = jwt.sign(
